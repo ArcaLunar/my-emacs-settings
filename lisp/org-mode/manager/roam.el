@@ -5,7 +5,7 @@
   :after org
   :init (setq org-roam-v2-ack t)
   :config (org-roam-setup)
-  :custom (org-roam-directory (concat org-directory "roam.org/"))
+  :custom (org-roam-directory (concat org-directory ".roam/"))
   :bind
   (("C-c r f" . org-roam-node-find)
    (:map org-mode-map

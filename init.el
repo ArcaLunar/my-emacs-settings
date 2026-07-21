@@ -1,8 +1,10 @@
 ;;; Init.el --- Load the full configuration -*- lexical-binding: t -*-
-;;; Commentary:
 
+;;; Commentary:
 ;; This file bootstraps the configuration, which is divided into
 ;; a number of other files.
+
+;;; Code:
 
 ;; INFO: Loads `lisp' as plugin folder, recursively
 (add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory)) ; where source code are loaded
@@ -33,13 +35,18 @@
 (setq display-line-numbers-type 'relative)
 (global-visual-line-mode 1)
 (global-hl-line-mode 1)
+(setq-default indent-tabs-mode nil)
+(setq-default tab-width 4)
 
 ;; INFO: enable copying
 (setq select-enable-clipboard t)
 (setq select-enable-primary t)
 
 ;; INFO: Treesitter for typst for syntax highlighting
-(setq treesit-language-source-alist '((typst "https://github.com/uben0/tree-sitter-typst")))
+(setq treesit-language-source-alist
+      '((typst "https://github.com/uben0/tree-sitter-typst")
+        (odin "https://github.com/tree-sitter-grammars/tree-sitter-odin")
+        (c3 "https://github.com/c3lang/tree-sitter-c3")))
 
 ;; INFO: Load MELPA, plugin collection
 (require 'package)
@@ -54,7 +61,8 @@
 (require 'completion)
 (require 'snippet)
 (require 'markdown)
-					; (require 'linter)
+(require 'linter)
+(require 'scroll)
 
 ;; INFO: project management
 (require 'project-manage)
@@ -74,7 +82,7 @@
 (require 'rust)
 (require 'json)
 (require 'toml)
-(require 'yaml)
+; (require 'yaml)
 (require 'fish-shell)
 (require 'haskell)
 (require 'bash-shell)
@@ -86,17 +94,23 @@
 (require 'ocaml)
 (require 'groovy)
 (require 'kotlin)
-
 (setq lsp-pyright-langserver-command "basedpyright")
 (require 'py)
 (require 'proto)
+(require 'zig)
+(require 'odin)
+(require 'c3)
+; (require 'cl) ; elisp common extension
+(require 'kdl) ; configuration file format for NIRI
+(require 'golang)
 
 (require 'formatter) ; formatter
+(require 'clipboard) ; system clipboard
 
 ;; INFO: note system for Emacs
 (require 'init-org)
-(require 'roam)
-(require 'roam-ui) ; provides visualization of org-roam, knowledge graph
+; (require 'roam)
+; (require 'roam-ui) ; provides visualization of org-roam, knowledge graph
 (require 'todo-highlight) ; highlight tokens like info, note.
 (require 'extra-org)
 (require 'modern-look) ; modern look in org-mode
@@ -104,8 +118,20 @@
 (require 'superagenda)
 (require 'ox-md nil t) ; load org-export-to-markdown
 (require 'refs)
+(require 'latex)
+(require 'autolist)
 
+;; INFO: enable font-lock-mode globally (syntax highlight)
+(global-font-lock-mode 1)
+(add-hook 'bibtex-mode-hook #'font-lock-mode)
+
+(setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
+; (setq org-startup-with-latex-preview t)
+(setq org-startup-with-inline-images t)
+; (require 'image-tweak)
+(require 'image-storage)
 (require 'export-to-html) ; HTML export settings
+(require 'publishing)
 
 ;; INFO: shortcuts
 (require 'find-next)
@@ -123,7 +149,13 @@
   (load custom-file))
 
 ;; INFO: use gruvbox
-(load-theme 'doom-material t)
+; (load-theme 'doom-moonlight t)
+; (load-theme 'vscode-dark-plus t)
+;(load-theme 'catppuccin :no-confirm)
+(setq catppuccin-flavor 'mocha) ;; or 'latte, 'macchiato, or 'mocha
+;(catppuccin-reload)
+(load-theme 'doom-moonlight t)
+; (load-theme 'doom-gruvbox t)
 (load-theme 'smart-mode-line-powerline t)
 
 (provide 'init)

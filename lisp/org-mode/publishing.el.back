@@ -1,0 +1,159 @@
+;;; publishing.el --- setup for publishing org files as HTMLs -*- lexical-binding: t -*-
+
+;;; Commentary:
+
+;;; Code:
+
+(require 'ox-publish)
+
+;; INFO: make org-publish parse all folders (including folders with only subfolders but files)
+(defun my/org-publish-create-directory-tree (project-plist)
+  "Create target directories for every source directory in PROJECT-PLIST."
+  (let* ((base-dir (file-truename
+                    (plist-get project-plist :base-directory)))
+         (pub-dir  (file-truename
+                    (plist-get project-plist :publishing-directory))))
+    (dolist (dir (directory-files-recursively base-dir ".*" t))
+      (when (file-directory-p dir)
+        (let ((target-dir
+               (expand-file-name
+                (file-relative-name dir base-dir)
+                pub-dir)))
+          (make-directory target-dir t))))))
+
+;; INFO: fix sitemap generation
+(defun my/org-publish-sitemap-with-directories (title list)
+  "Generate sitemap TITLE from LIST, keeping directory-only nodes."
+  (concat "#+TITLE: " title "\n\n"
+          (my/org-publish-sitemap-format-list list)))
+
+(defun my/org-publish-sitemap-format-list (list)
+  "Format sitemap LIST recursively."
+  (mapconcat
+   (lambda (entry)
+     (cond
+      ;; Directory node: (DIR . CONTENTS)
+      ((and (consp entry)
+            (stringp (car entry)))
+       (format "- %s\n%s"
+               (car entry)
+               (my/org-publish-sitemap-indent
+                (my/org-publish-sitemap-format-list (cdr entry)))))
+
+      ;; File entry: Org usually gives a string here.
+      ((stringp entry)
+       (format "- %s\n" entry))
+
+      (t "")))
+   list
+   ""))
+
+(defun my/org-publish-sitemap-indent (text)
+  "Indent sitemap TEXT by two spaces."
+  (replace-regexp-in-string "^" "  " text))
+
+(require 'cl-lib)
+
+(defun my/org-file-title (file)
+  "Return #+TITLE of FILE, or its basename."
+  (with-temp-buffer
+    (insert-file-contents file nil 0 2048)
+    (goto-char (point-min))
+    (if (re-search-forward "^#\\+title:[ \t]*\\(.+\\)$" nil t)
+        (string-trim (match-string 1))
+      (file-name-base file))))
+
+(defun my/org-sitemap-entry (path base-dir depth)
+  "Generate sitemap entry for PATH relative to BASE-DIR at DEPTH."
+  (let ((indent (make-string (* 2 depth) ?\s)))
+    (cond
+     ((file-directory-p path)
+      (let* ((name (file-name-nondirectory (directory-file-name path)))
+             (children
+              (sort
+               (directory-files path t directory-files-no-dot-files-regexp)
+               #'string-lessp)))
+        (concat indent "- " name "\n"
+                (mapconcat
+                 (lambda (child)
+                   (my/org-sitemap-entry child base-dir (1+ depth)))
+                 children
+                 ""))))
+
+     ((and (string= (file-name-extension path) "org")
+           (not (string= (file-name-nondirectory path) "index.org")))
+      (format "%s- [[file:%s][%s]]\n"
+              indent
+              (file-relative-name path base-dir)
+              (my/org-file-title path)))
+
+     (t ""))))
+
+(defun my/org-generate-sitemap (project-plist)
+  "Generate index.org manually, including directory-only folders."
+  (let* ((base-dir (file-truename
+                    (plist-get project-plist :base-directory)))
+         (sitemap-file (expand-file-name
+                        (or (plist-get project-plist :sitemap-filename)
+                            "index.org")
+                        base-dir))
+         (title (or (plist-get project-plist :sitemap-title)
+                    "Sitemap"))
+         (children
+          (sort
+           (directory-files base-dir t directory-files-no-dot-files-regexp)
+           #'string-lessp)))
+    (with-temp-file sitemap-file
+      (insert "#+TITLE: " title "\n\n")
+      (insert
+       (mapconcat
+        (lambda (child)
+          (my/org-sitemap-entry child base-dir 0))
+        children
+        "")))))
+
+(defun my/org-publish-prepare (project-plist)
+  "Prepare directories and generate sitemap PROJECT-PLIST."
+  (my/org-publish-create-directory-tree project-plist)
+  (my/org-generate-sitemap project-plist))
+
+(setq org-publish-project-alist
+      '(("org-site"
+         :base-directory "~/org/"
+         :base-extension "org"
+         :publishing-directory "~/Blog/emacs-orgs-blog/"
+         :publishing-function org-html-publish-to-html
+         :recursive t
+         :with-author t
+         :with-creator nil
+         :section-numbers t
+         :time-stamp-file nil
+
+         :preparation-function my/org-publish-prepare
+
+         ;; sitemap
+         :auto-sitemap nil
+         :sitemap-filename "index.org"
+         :sitemap-title "My Blog"
+         ;:sitemap-sort-files anti-chronologically
+         ;:sitemap-style tree
+         ;:sitemap-function my/org-publish-sitemap-with-directories
+
+         :html-head "<link rel=\"stylesheet\" type=\"text/css\" href=\"https://arcalunar.github.io/assets/styles/style.css\"/>"
+         :html-link-home "/"
+         :html-link-up "/")
+
+        ("org-static"
+         :base-directory "~/org/"
+         :base-extension "css\\|js\\|png\\|jpg\\|jpeg\\|gif\\|svg\\|pdf"
+         :publishing-directory "~/Blog/emacs-orgs-blog/"
+         :publishing-function org-publish-attachment
+         :preparation-function my/org-publish-create-directory-tree
+         :recursive t)
+
+        ("blog-site"
+         :components ("org-site" "org-static"))))
+
+(provide 'publishing)
+
+;;; publishing.el ends here

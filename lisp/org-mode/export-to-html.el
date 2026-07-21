@@ -46,6 +46,7 @@
         (goto-char (point-max))
         (insert (format "#+%s: %s\n" keyword value))))
 
+;    (update-plain-keyword "OPTIONS" "toc:nil")
     ;; 2. TITLE
     (update-plain-keyword "TITLE" (file-name-base buffer-file-name))
     ;; 3. DATE with weekday
@@ -54,12 +55,14 @@
            (weekday (format-time-string "%a" now)))
       (update-plain-keyword "DATE" (format "%s %s" date-str weekday)))
     ;; 4. HTML_HEAD
-    (update-plain-keyword "HTML_HEAD"
-      "<link rel=\"stylesheet\" type=\"text/css\" href=\"https://gongzhitaao.org/orgcss/org.css\"/>")
+;    (update-plain-keyword "HTML_HEAD"
+;      "<link rel=\"stylesheet\" type=\"text/css\" href=\"https://arcalunar.github.io/assets/styles/style.css\"/>")
     ;; 5. FILETAGS – empty but keep formatting
     (update-plain-keyword "FILETAGS" " : :")
     ;; 6. DESCRIPTION – empty
-    (update-plain-keyword "DESCRIPTION" "")))
+    (update-plain-keyword "DESCRIPTION" ""))
+  (vulpea-db-sync-full-scan)
+  )
 
 ;; Bind to C-c r ,
 (with-eval-after-load 'org

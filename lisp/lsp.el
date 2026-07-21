@@ -1,6 +1,9 @@
-;;; lsp.el --- just simply configs LSP  -*- lexical-binding: t; -*-
+;;; lsp.el --- just simply configs LSP -*- lexical-binding:t -*-
+
 ;;; Commentary:
-;;; package that configures LSP
+;; package that configures LSP
+
+;;; Code:
 
 (use-package lsp-mode
   :ensure t
@@ -27,7 +30,7 @@
   ("C-c l s" . lsp-ivy-workspace-symbol)
   :custom
   (lsp-haskell-server-path "/home/lunatic/.ghcup/bin/haskell-language-server-wrapper")
-  ;; INFO: setting up ocamllsp for OCaml completion 
+  ;; INFO: setting up ocamllsp for OCaml completion
   (lsp-ocaml-lsp-server-command '("opam" "exec" "--" "ocamllsp"))
   )
 
@@ -35,4 +38,16 @@
   :ensure t
   :after (lsp-mode))
 
+(use-package lsp-ui
+  :ensure t
+  :after lsp-mode
+  :hook (lsp-mode . lsp-ui-mode)
+  :custom
+  (lsp-ui-doc-enable t)
+  (lsp-ui-doc-position 'at-point)
+  (lsp-ui-sideline-enable t)
+  (lsp-ui-peek-enable t))
+
 (provide 'lsp)
+
+;;; lsp.el ends here

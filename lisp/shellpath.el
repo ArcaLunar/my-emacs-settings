@@ -1,14 +1,18 @@
+;;; shellpath.el --- loads shell PATH to Emacs -*- lexical-binding: t -*-
+
+;;; Commentary:
+
+;;; Code:
+
 (use-package exec-path-from-shell
-  :ensure t
-  :if (memq window-system '(mac ns x pgtk))
-  :config
-  (setq exec-path-from-shell-variables
-	'("PATH"
-	  "MANPATH"
-	  "OPAM_SWITCH_PREFIX"
-	  "OPAMSWITCH"
-	  "CAML_LD_LIBRARY_PATH"
-	  "OCAML_TOPLEVEL_PATH"))
+  :ensure t)
+
+(when (memq window-system '(mac ns x pgtk))
+  (exec-path-from-shell-initialize))
+
+(when (daemonp)
   (exec-path-from-shell-initialize))
 
 (provide 'shellpath)
+
+;;; shellpath.el ends here

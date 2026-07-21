@@ -11,4 +11,7 @@
 (setq org-hide-emphasis-markers t) ; hide grammar symbols
 (global-prettify-symbols-mode 1) ; 
 
+(setq org-src-fontify-natively t)
+(setq org-highlight-latex-and-related '(latex script entities))
+
 (provide 'init-org)

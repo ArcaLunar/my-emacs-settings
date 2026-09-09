@@ -1,11 +1,42 @@
+#+title: My Emacs Configs
+
+* Appearance
+
+** Theming
+
+Setting up the theme to ~moonlight~
+
+#+begin_src emacs-lisp
 (setq doom-theme 'doom-moonlight)
+#+end_src
 
+** UX
+
+Set relative line numbers.
+
+#+begin_src emacs-lisp
 (setq display-line-numbers-type 'relative)
+#+end_src
 
+Auto saving.
+
+#+begin_src emacs-lisp
 (auto-save-visited-mode 1)
+#+end_src
 
+** Ghostel Workaround
+
+Use ~zsh~ in ghostel
+
+#+begin_src emacs-lisp
 (setq shell-file-name (executable-find "zsh"))
+#+end_src
 
+** Font
+
+Monitor specific settings
+
+#+begin_src emacs-lisp
 (let ((mon-name (alist-get 'name (frame-monitor-attributes)))
       (font-size 14)
       (monospace-font "Lilex")
@@ -33,7 +64,11 @@
     (progn
       (add-hook 'after-setting-font-hook #'my/setup-cjk-fonts)
       (my/setup-cjk-fonts)))
+#+end_src
 
+* Org Management
+
+#+begin_src emacs-lisp
 (defun my/org-export-to-tmp-html ()
   "Export current org buffer to a temp HTML file in /tmp and open it in the default browser."
   (interactive)
@@ -42,13 +77,32 @@
     (org-export-to-file 'html tmpfile)
     (browse-url (concat "file://" tmpfile))
     (message "Exported to %s" tmpfile)))
+#+end_src
 
+Coping with ~corfu~ in ~.org~ files
+
+#+begin_src emacs-lisp
 (setq ispell-completion-at-point nil)
+#+END_SRC
 
+* Key Bindings
+
+Bind ~C-c k~ to LSP describe var/func
+
+#+begin_src emacs-lisp
 (keymap-global-set "C-c k" 'lsp-describe-thing-at-point)
+#+end_src
 
+Bind blog related shortkeys.
+
+#+begin_src emacs-lisp
 (keymap-global-set "C-c b r" 'my/org-publish-blog)
 (keymap-global-set "C-c b f" 'my/org-publish-blog-force)
 (keymap-global-set "C-c b d" 'my/org-publish-and-deploy)
+#+end_src
 
+Quick Treemacs switch focus.
+
+#+begin_src emacs-lisp
 (keymap-global-set "M-o" #'treemacs-select-window)
+#+end_src

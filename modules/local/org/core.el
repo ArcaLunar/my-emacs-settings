@@ -31,7 +31,12 @@
   :hook (org-mode . org-autolist-mode))
 
 (use-package! org-special-block-extras
-  :hook (org-mode . org-special-block-extras-mode))
+  :hook (org-mode . org-special-block-extras-mode)
+  :init
+  ;; Nothing in the blog uses this package's tooltip/kbd features, so skip
+  ;; the remote tooltipster CSS/JS (and jQuery fallback) it otherwise injects
+  ;; into every exported page's <head> from alhassy.github.io.
+  (setq org-special-block-add-html-extra nil))
 
 (use-package! org-super-agenda
   :after org-agenda

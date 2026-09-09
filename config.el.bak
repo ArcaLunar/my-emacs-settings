@@ -1,0 +1,46 @@
+;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
+
+;; NOTE: set theme
+(setq doom-theme 'doom-moonlight)
+;; NOTE: relative line number
+(setq display-line-numbers-type 'relative)
+;; NOTE: set shell for ghostel
+(setq shell-file-name (executable-find "zsh"))
+
+;; NOTE: font configutation
+(setq doom-variable-pitch-font (font-spec :family "HarmonyOS Sans SC"))
+
+;; NOTE: bind C-c k to LSP describe var/func
+(keymap-global-set "C-c k" 'lsp-describe-thing-at-point)
+
+
+;; NOTE: Geist Mono for Latin and LXGW Wenkai Mono Screen
+(let ((mon-name (alist-get 'name (frame-monitor-attributes)))
+      (font-size 14))
+  (when (equal mon-name "eDP-1")
+    (setq font-size 20))
+  (setq doom-font
+        (font-spec
+         :family "Geist Mono"
+         :size font-size)))
+
+;; NOTE: setup CJK fonts
+(defun my/setup-cjk-font ()
+  (dolist (script '(han kana cjk-misc bopomofo))
+    (set-fontset-font nil script
+                      (font-spec :family "LXGW WenKai Mono Screen")
+                      nil 'prepend)))
+(if (display-graphic-p)
+    (progn
+      (add-hook 'after-setting-font-hook #'my/setup-cjk-font)
+      (my/setup-cjk-font)))
+
+;; NOTE: use `eww' to view exported HTML of org files.
+(defun my/org-export-to-tmp-html ()
+  "Export current org buffer to a temp HTML file in /tmp and open it in the default browser."
+  (interactive)
+  (require 'ox-html)
+  (let ((tmpfile (make-temp-file "org-export-" nil ".html")))
+    (org-export-to-file 'html tmpfile)
+    (browse-url (concat "file://" tmpfile))
+    (message "Exported to %s" tmpfile)))
